@@ -1,0 +1,207 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class BaseEntity {
++id : Long
++createdAt : LocalDateTime
++updatedAt : LocalDateTime
+}
+
+class User {
++name : String
++email : String
++password : String
++enabled : Boolean
++lastLogin
++profileImage
+}
+
+class Role {
++id : Long
++name : RoleName
+description : String
+}
+
+class Category {
++name : String
++slug : String
++description : String
++icon : String
++color : String
++orderIndex : Integer
++active : Boolean
+
+}
+
+class Lesson {
++title : String
++slug : String
++description : String
++difficulty : Difficulty
++estimatedTime : Integer
++thumbnail : String
++published : Boolean
++orderIndex : Integer
+level : EnglishLevel
+}
+
+class LessonSection {
++id : Long
++title : String
++content : String
++type : SectionType
++orderIndex : Integer
+}
+
+class Exercise {
++title : String
++description : String
+}
+
+class Question {
++id : Long
++statement : String
++explanation : String
+}
+
+class Alternative {
++id : Long
++text : String
++correct : Boolean
+}
+
+class Favorite {
++id : Long
++user : User
++lesson : Lesson
+}
+
+class UserProgress {
++id : Long
++completed : Boolean
++score : Integer
++percentage : Double
++lastAccess : LocalDateTime
++user : User
++lesson : Lesson
+}
+
+class Tag {
++name : String
++slug : String
+}
+
+class LessonTag {
+lesson : Lesson
+tag : Tag
+}
+
+class Audio {
++id
++url
++duration
+}
+
+class Example {
++id
++english
++portuguese
++audio : Audio
+}
+
+class Image {
++id
+}
+
+class StudySession {
++id : Long
++startTime : LocalDateTime
++endTime : LocalDateTime
++durationMinutes : Integer
++completed : Boolean
++score : Integer
++notes : String
+  }
+
+enum Difficulty {
+BEGINNER
+INTERMEDIATE
+ADVANCED
+}
+
+enum ExerciseDifficulty {
+EASY
+MEDIUM
+HARD
+}
+
+enum SectionType {
+TEXT
+GRAMMAR
+VOCABULARY
+PHRASE
+EXAMPLE
+AUDIO
+IMAGE
+VIDEO
+}
+
+enum EnglishLevel{
+
+A1,
+A2,
+B1,
+B2,
+C1,
+C2
+}
+
+enum RoleName {
+USER
+ADMIN
+}
+
+User --------|> BaseEntity
+
+Lesson ------|> BaseEntity
+
+Category ----|> BaseEntity
+
+Exercise ----|> BaseEntity
+
+Tag ---------|> BaseEntity
+
+Role "1" -- "*" User
+
+Category "1" -- "*" Lesson
+
+User "1" --- "*" Favorite
+
+User "1" --- "*" UserProgress
+
+Lesson "1" --- "*" LessonSection
+
+LessonSection "1" --- "*" Audio
+
+LessonSection "1" --- "*" Example
+
+LessonSection "1" --- "*" Image
+
+Lesson "1" --- "*" Exercise
+
+Lesson "1" --- "*" Favorite
+
+Lesson "1" --- "*" UserProgress
+
+Lesson "1" --- "*" LessonTag
+
+LessonTag "1" --- "*" Tag
+
+Question "1" --- "*" Alternative
+
+Exercise "1" --- "*" Question
+
+User "1" ---- "*" StudySession
+
+Lesson "1" ---- "*" StudySession
+@enduml

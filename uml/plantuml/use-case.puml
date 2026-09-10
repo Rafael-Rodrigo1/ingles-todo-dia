@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Visitante" as Guest
+actor "Aluno" as Student
+actor "Administrador" as Admin
+
+rectangle "Plataforma Inglês Todo Dia" {
+
+usecase "Visualizar Home" as UC1
+  usecase "Pesquisar Conteúdo" as UC2
+  usecase "Visualizar Categorias" as UC3
+  usecase "Visualizar Aula" as UC4
+  usecase "Ouvir Pronúncia" as UC5
+  usecase "Visualizar Vocabulário" as UC6
+  usecase "Resolver Exercícios" as UC7
+
+ usecase "Cadastrar Conta" as UC8
+   usecase "Realizar Login" as UC9
+   usecase "Favoritar Conteúdo" as UC10
+   usecase "Acompanhar Progresso" as UC11
+   usecase "Editar Perfil" as UC12
+
+   usecase "Gerenciar Categorias" as UC13
+   usecase "Gerenciar Aulas" as UC14
+   usecase "Gerenciar Vocabulários" as UC15
+   usecase "Gerenciar Frases" as UC16
+   usecase "Gerenciar Exercícios" as UC17
+   usecase "Gerenciar Usuários" as UC18
+}
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+Guest --> UC6
+Guest --> UC7
+Guest --> UC8
+
+Student --> UC9
+Student --> UC10
+Student --> UC11
+Student --> UC12
+
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC16
+Admin --> UC17
+Admin --> UC18
+@enduml
