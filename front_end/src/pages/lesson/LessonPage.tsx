@@ -235,7 +235,6 @@ export function LessonPage() {
         const updatedTotalStudyTime =
             previousStudyTime + newStudyTime;
 
-        accountedSessionTime.current = currentSessionTime;
 
         const data = {
             lessonId: lesson.id,
@@ -258,6 +257,8 @@ export function LessonPage() {
                 updatedTotalStudyTime,
             });
             const updatedProgress = await saveProgress(data);
+
+            accountedSessionTime.current = currentSessionTime;
 
             setSavedProgress(updatedProgress);
 
