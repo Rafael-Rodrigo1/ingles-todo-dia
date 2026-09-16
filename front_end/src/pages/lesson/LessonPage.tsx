@@ -9,6 +9,7 @@ import { getExercisesByLesson } from "../../services/exerciseService";
 import type { Exercise } from "../../types/exercise";
 import {getMyProgressByLesson, saveProgress,} from "../../services/progressService";
 import type { UserProgress } from "../../types/userProgress";
+import { getExerciseProgressByLesson, saveExerciseProgress,} from "../../services/exerciseProgressService";
 
 export function LessonPage() {
     const { id } = useParams<{ id: string }>();
@@ -126,11 +127,43 @@ export function LessonPage() {
                         "Progresso da aula recebido:",
                         progressData
                     );
-                } catch (error) {
+                }
+
+                catch (error) {
                     setSavedProgress(null);
 
                     console.log(
                         "A aula ainda não possui progresso salvo."
+                    );
+                }
+
+                try {
+                    const exerciseProgress =
+                        await getExerciseProgressByLesson(lessonId);
+
+                    const restoredExercises =
+                        exerciseProgress
+                            .filter((progress) => progress.completed)
+                            .reduce<Record<number, number>>(
+                                (accumulator, progress) => {
+                                    accumulator[progress.exerciseId] =
+                                        progress.score;
+
+                                    return accumulator;
+                                },
+                                {}
+                            );
+
+                    setCompletedExercises(restoredExercises);
+
+                    console.log(
+                        "Progresso dos exercícios restaurado:",
+                        restoredExercises
+                    );
+                } catch (error) {
+                    console.error(
+                        "Erro ao carregar progresso dos exercícios:",
+                        error
                     );
                 }
 
@@ -256,6 +289,13 @@ export function LessonPage() {
                 previousStudyTime,
                 updatedTotalStudyTime,
             });
+
+            await saveExerciseProgress({
+                exerciseId,
+                completed: true,
+                score,
+            });
+
             const updatedProgress = await saveProgress(data);
 
             accountedSessionTime.current = currentSessionTime;

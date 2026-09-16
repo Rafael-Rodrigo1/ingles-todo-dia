@@ -58,6 +58,7 @@ class Exercise {
 +description : String
 }
 
+
 class Question {
 +id : Long
 +statement : String
@@ -84,6 +85,13 @@ class UserProgress {
 +lastAccess : LocalDateTime
 +user : User
 +lesson : Lesson
+}
+
+class UserExerciseProgress {
++completed : Boolean
++score : Integer
++attempts : Integer
++lastAttempt : LocalDateTime
 }
 
 class Tag {
@@ -169,6 +177,8 @@ Category ----|> BaseEntity
 
 Exercise ----|> BaseEntity
 
+UserExerciseProgress --------|> BaseEntity
+
 Tag ---------|> BaseEntity
 
 Role "1" -- "*" User
@@ -200,6 +210,10 @@ LessonTag "1" --- "*" Tag
 Question "1" --- "*" Alternative
 
 Exercise "1" --- "*" Question
+
+User "1" --- "*" UserExerciseProgress
+
+Exercise "1" --- "*" UserExerciseProgress
 
 User "1" ---- "*" StudySession
 
