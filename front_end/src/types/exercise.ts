@@ -9,4 +9,4 @@ export interface Exercise {
     difficulty: string;
     lessonId: number;
     lessonTitle: string;
-}s
+}
