@@ -5,12 +5,15 @@ import { AdminRoute } from "./AdminRoute";
 import { LessonPage } from "../pages/lesson/LessonPage";
 import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { MainLayout } from "../layout/MainLayout";
+import { RegisterPage } from "../pages/register/RegisterPage";
 
 export function AppRoutes() {
     return (
         <Routes>
             {/* Rotas públicas */}
             <Route path="/login" element={<LoginPage />} />
+
+            <Route path="/register" element={<RegisterPage />} />
 
             {/* Rotas autenticadas */}
             <Route element={<PrivateRoute />}>
