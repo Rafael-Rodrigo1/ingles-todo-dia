@@ -6,6 +6,9 @@ import { LessonPage } from "../pages/lesson/LessonPage";
 import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { MainLayout } from "../layout/MainLayout";
 import { RegisterPage } from "../pages/register/RegisterPage";
+import { AdminDashboardPage } from "../pages/Admin/AdminDashboardPage";
+import { AdminCategoriesPage } from "../pages/Admin/categories/AdminCategoriesPage";
+import { AdminLessonsPage } from "../pages/Admin/lessons/AdminLessonsPage";
 
 export function AppRoutes() {
     return (
@@ -47,7 +50,21 @@ export function AppRoutes() {
                     <Route element={<AdminRoute />}>
                         <Route
                             path="/admin"
-                            element={<h1>Painel administrativo</h1>}
+                            element={<AdminDashboardPage />}
+                        />
+                        <Route
+                            path="/admin"
+                            element={<AdminDashboardPage />}
+                        />
+
+                        <Route
+                            path="/admin/categories"
+                            element={<AdminCategoriesPage />}
+                        />
+
+                        <Route
+                            path="/admin/lessons"
+                            element={<AdminLessonsPage />}
                         />
                     </Route>
                 </Route>
