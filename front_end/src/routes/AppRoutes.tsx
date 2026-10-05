@@ -9,6 +9,7 @@ import { RegisterPage } from "../pages/register/RegisterPage";
 import { AdminDashboardPage } from "../pages/Admin/AdminDashboardPage";
 import { AdminCategoriesPage } from "../pages/Admin/categories/AdminCategoriesPage";
 import { AdminLessonsPage } from "../pages/Admin/lessons/AdminLessonsPage";
+import { AdminExercisesPage } from "../pages/Admin/exercises/AdminExercisesPage";
 
 export function AppRoutes() {
     return (
@@ -65,6 +66,11 @@ export function AppRoutes() {
                         <Route
                             path="/admin/lessons"
                             element={<AdminLessonsPage />}
+                        />
+
+                        <Route
+                            path="/admin/exercises"
+                            element={<AdminExercisesPage />}
                         />
                     </Route>
                 </Route>
