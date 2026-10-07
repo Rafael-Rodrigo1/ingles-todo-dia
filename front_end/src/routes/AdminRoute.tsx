@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
+
 export function AdminRoute() {
     const { user, isAuthenticated } = useAuth();
 
