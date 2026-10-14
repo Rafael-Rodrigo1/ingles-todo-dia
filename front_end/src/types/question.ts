@@ -9,3 +9,13 @@ export interface Question {
     exerciseId: number;
     exerciseTitle: string;
 }
+
+export interface QuestionRequest {
+    statement: string;
+    explanation: string | null;
+    orderIndex: number;
+    imageUrl: string | null;
+    audioUrl: string | null;
+    points: number;
+    exerciseId: number;
+}

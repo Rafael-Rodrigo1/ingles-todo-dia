@@ -32,6 +32,12 @@ public class AlternativeService {
                                 "Questão não encontrada."
                         ));
 
+        validateCorrectAlternative(
+                question.getId(),
+                null,
+                request.getCorrect()
+        );
+
         Alternative alternative = mapper.toEntity(request);
 
         alternative.setQuestion(question);
@@ -94,6 +100,12 @@ public class AlternativeService {
                                 "Questão não encontrada."
                         ));
 
+        validateCorrectAlternative(
+                question.getId(),
+                alternative.getId(),
+                request.getCorrect()
+        );
+
         alternative.setText(request.getText());
         alternative.setCorrect(request.getCorrect());
         alternative.setQuestion(question);
@@ -113,5 +125,28 @@ public class AlternativeService {
         }
 
         alternativeRepository.deleteById(id);
+    }
+    private void validateCorrectAlternative(
+            Long questionId,
+            Long currentAlternativeId,
+            Boolean correct) {
+
+        if (!Boolean.TRUE.equals(correct)) {
+            return;
+        }
+
+        boolean anotherCorrectExists = alternativeRepository
+                .findByQuestionId(questionId)
+                .stream()
+                .anyMatch(alternative ->
+                        Boolean.TRUE.equals(alternative.getCorrect())
+                                && !alternative.getId().equals(currentAlternativeId)
+                );
+
+        if (anotherCorrectExists) {
+            throw new IllegalArgumentException(
+                    "Esta pergunta já possui uma alternativa correta."
+            );
+        }
     }
 }

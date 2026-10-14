@@ -546,6 +546,12 @@ export function AdminExercisesPage() {
 
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
+                                            <Link
+                                                to={`/admin/exercises/${exercise.id}/questions`}
+                                                className="font-medium text-blue-600 hover:text-blue-700"
+                                            >
+                                                Gerenciar perguntas
+                                            </Link>
                                             <button
                                                 type="button"
                                                 onClick={() => handleEdit(exercise)}

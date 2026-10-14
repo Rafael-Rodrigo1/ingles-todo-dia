@@ -5,6 +5,7 @@ import { ExerciseSection } from "../exercise/ExerciseSection";
 interface LessonSectionContentProps {
     section: LessonSection;
     exercises: Exercise[];
+    completedExercises: Record<number, number>;
     onExerciseComplete?: (
         exerciseId: number,
         score: number,
@@ -15,6 +16,7 @@ interface LessonSectionContentProps {
 export function LessonSectionContent({
                                          section,
                                          exercises,
+                                         completedExercises,
                                          onExerciseComplete,
                                      }: LessonSectionContentProps) {
     switch (section.type) {
@@ -33,6 +35,7 @@ export function LessonSectionContent({
             return (
                 <ExerciseSection
                     exercises={exercises}
+                    completedExercises={completedExercises}
                     onExerciseComplete={onExerciseComplete}
                 />
             );

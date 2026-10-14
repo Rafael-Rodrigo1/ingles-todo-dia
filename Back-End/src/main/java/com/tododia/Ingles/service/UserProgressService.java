@@ -57,16 +57,19 @@ public class UserProgressService {
                     return newProgress;
                 });
 
-        progress.setCompleted(request.getCompleted());
-        progress.setScore(request.getScore());
-        progress.setPercentage(request.getPercentage());
-        progress.setCurrentSection(request.getCurrentSection());
-        progress.setExercisesCompleted(
-                request.getExercisesCompleted()
-        );
-        progress.setTotalStudyTime(
-                request.getTotalStudyTime()
-        );
+        // Progress must not decrease after a previously approved attempt.
+        progress.setCompleted(Boolean.TRUE.equals(progress.getCompleted())
+                || Boolean.TRUE.equals(request.getCompleted()));
+        progress.setScore(Math.max(progress.getScore() == null ? 0 : progress.getScore(),
+                request.getScore()));
+        progress.setPercentage(Math.max(progress.getPercentage() == null ? 0.0 : progress.getPercentage(),
+                request.getPercentage()));
+        progress.setCurrentSection(Math.max(progress.getCurrentSection() == null ? 0 : progress.getCurrentSection(),
+                request.getCurrentSection()));
+        progress.setExercisesCompleted(Math.max(progress.getExercisesCompleted() == null ? 0 : progress.getExercisesCompleted(),
+                request.getExercisesCompleted()));
+        progress.setTotalStudyTime(Math.max(progress.getTotalStudyTime() == null ? 0 : progress.getTotalStudyTime(),
+                request.getTotalStudyTime()));
 
         progress.setLastAccess(LocalDateTime.now());
 

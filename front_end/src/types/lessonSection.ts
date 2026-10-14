@@ -16,3 +16,11 @@ export interface LessonSection {
     lessonId: number;
     lessonTitle: string;
 }
+
+export interface LessonSectionRequest {
+    title: string;
+    content: string;
+    type: SectionType;
+    orderIndex: number;
+    lessonId: number;
+}

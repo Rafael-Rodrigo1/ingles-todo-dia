@@ -6,6 +6,7 @@ import { QuestionCard } from "./QuestionCard";
 
 interface ExerciseSectionProps {
     exercises: Exercise[];
+    completedExercises: Record<number, number>;
     onExerciseComplete?: (
         exerciseId: number,
         score: number,
@@ -16,6 +17,7 @@ interface ExerciseSectionProps {
 interface ExerciseCardProps {
     exercise: Exercise;
     index: number;
+    savedScore?: number;
     onExerciseComplete?: (
         exerciseId: number,
         score: number,
@@ -23,13 +25,16 @@ interface ExerciseCardProps {
     ) => void;
 }
 
-function ExerciseCard({exercise, index, onExerciseComplete, } : ExerciseCardProps) {
+function ExerciseCard({exercise, index, savedScore, onExerciseComplete, } : ExerciseCardProps) {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [answers, setAnswers] = useState<Record<number, boolean>>({});
 
     const completionSent = useRef(false);
+    const [attempt, setAttempt] = useState(0);
+    const [retrying, setRetrying] = useState(false);
+    const showSavedResult = savedScore !== undefined && !retrying;
 
     useEffect(() => {
         async function loadQuestions() {
@@ -118,6 +123,13 @@ function ExerciseCard({exercise, index, onExerciseComplete, } : ExerciseCardProp
         onExerciseComplete,
     ]);
 
+    function handleRetry() {
+        setRetrying(true);
+        setAnswers({});
+        completionSent.current = false;
+        setAttempt((current) => current + 1);
+    }
+
     return (
         <div className="rounded-lg border border-slate-200 bg-white p-5">
             <div className="flex items-start justify-between gap-4">
@@ -154,7 +166,18 @@ function ExerciseCard({exercise, index, onExerciseComplete, } : ExerciseCardProp
                 )}
             </div>
 
-            {totalQuestions > 0 && (
+            {showSavedResult && (
+                <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                    <p className="font-semibold text-emerald-700">Exercício aprovado!</p>
+                    <p className="mt-1 text-sm text-slate-700">Melhor nota registrada: <strong>{savedScore}%</strong>.</p>
+                    <p className="mt-1 text-sm text-slate-600">Progresso salvo. Você pode refazer o exercício sem perder a aprovação.</p>
+                    <button type="button" onClick={handleRetry} className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+                        Refazer exercício
+                    </button>
+                </div>
+            )}
+
+            {!showSavedResult && totalQuestions > 0 && (
                 <div className="mt-5 rounded-lg bg-slate-50 p-4">
                     <div className="flex items-center justify-between text-sm">
             <span className="font-medium text-slate-700">
@@ -195,6 +218,16 @@ function ExerciseCard({exercise, index, onExerciseComplete, } : ExerciseCardProp
                                 Pontuação mínima para aprovação:{" "}
                                 <strong>{exercise.passingScore}%</strong>.
                             </p>
+
+                            {!passed && (
+                                <button
+                                    type="button"
+                                    onClick={handleRetry}
+                                    className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                                >
+                                    Tentar novamente
+                                </button>
+                            )}
                         </div>
                     )}
 
@@ -218,7 +251,7 @@ function ExerciseCard({exercise, index, onExerciseComplete, } : ExerciseCardProp
                 </div>
             )}
 
-            <div className="mt-6 border-t border-slate-200 pt-5">
+            {!showSavedResult && <div className="mt-6 border-t border-slate-200 pt-5">
                 {loading && (
                     <p className="text-sm text-slate-500">
                         Carregando perguntas...
@@ -241,7 +274,7 @@ function ExerciseCard({exercise, index, onExerciseComplete, } : ExerciseCardProp
                     <div className="space-y-4">
                         {questions.map((question, questionIndex) => (
                             <QuestionCard
-                                key={question.id}
+                                key={`${question.id}-${attempt}`}
                                 question={question}
                                 index={questionIndex}
                                 onAnswer={handleAnswer}
@@ -249,12 +282,12 @@ function ExerciseCard({exercise, index, onExerciseComplete, } : ExerciseCardProp
                         ))}
                     </div>
                 )}
-            </div>
+            </div>}
         </div>
     );
 }
 
-export function ExerciseSection({ exercises, onExerciseComplete, } : ExerciseSectionProps) {
+export function ExerciseSection({ exercises, completedExercises, onExerciseComplete, } : ExerciseSectionProps) {
     if (exercises.length === 0) {
         return (
             <p className="text-sm text-slate-500">
@@ -270,6 +303,7 @@ export function ExerciseSection({ exercises, onExerciseComplete, } : ExerciseSec
                         key={exercise.id}
                         exercise={exercise}
                         index={index}
+                        savedScore={completedExercises[exercise.id]}
                         onExerciseComplete={onExerciseComplete}
                     />
                     ))}

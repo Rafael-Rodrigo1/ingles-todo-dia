@@ -6,14 +6,17 @@ import { LessonPage } from "../pages/lesson/LessonPage";
 import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { MainLayout } from "../layout/MainLayout";
 import { RegisterPage } from "../pages/register/RegisterPage";
+import { GrammarPage } from "../pages/grammar/GrammarPage";
 import { AdminTagsPage } from "../pages/Admin/tags/AdminTagsPage";
 import { AdminDashboardPage } from "../pages/Admin/AdminDashboardPage";
 import { AdminCategoriesPage } from "../pages/Admin/categories/AdminCategoriesPage";
 import { AdminLessonsPage } from "../pages/Admin/lessons/AdminLessonsPage";
 import { AdminUsersPage } from "../pages/Admin/users/AdminUsersPage";
 import { AdminExercisesPage } from "../pages/Admin/exercises/AdminExercisesPage";
+import AdminLessonSectionsPage from "../pages/Admin/lessons/AdminLessonSectionsPage";
 import { AdminVocabularyPage } from "../pages/Admin/vocabulary/AdminVocabularyPage";
-
+import { AdminExerciseQuestionsPage } from "../pages/Admin/exercises/AdminExerciseQuestionsPage";
+import { AdminQuestionAlternativesPage } from "../pages/Admin/exercises/AdminQuestionAlternativesPage";
 
 export function AppRoutes() {
     return (
@@ -33,7 +36,7 @@ export function AppRoutes() {
 
                     <Route
                         path="/grammar"
-                        element={<h1>Gramática</h1>}
+                        element={<GrammarPage />}
                     />
 
                     <Route
@@ -53,10 +56,6 @@ export function AppRoutes() {
 
                     {/* Rotas exclusivas para ADMIN */}
                     <Route element={<AdminRoute />}>
-                        <Route
-                            path="/admin"
-                            element={<AdminDashboardPage />}
-                        />
                         <Route
                             path="/admin"
                             element={<AdminDashboardPage />}
@@ -86,12 +85,29 @@ export function AppRoutes() {
                             path="/admin/tags"
                             element={<AdminTagsPage />}
                         />
+
+                        <Route
+                            path="/admin/users"
+                            element={<AdminUsersPage />}
+                        />
+
+                        <Route
+                            path="/admin/lessons/:lessonId/sections"
+                            element={<AdminLessonSectionsPage />}
+                        />
+
+                        <Route
+                            path="/admin/exercises/:exerciseId/questions"
+                            element={<AdminExerciseQuestionsPage />}
+                        />
+
+                        <Route
+                            path="/admin/questions/:questionId/alternatives"
+                            element={<AdminQuestionAlternativesPage />}
+                        />
                     </Route>
 
-                    <Route
-                        path="/admin/users"
-                        element={<AdminUsersPage />}
-                    />
+
                 </Route>
             </Route>
 

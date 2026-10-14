@@ -585,6 +585,13 @@ export function AdminLessonsPage() {
                                                 Editar
                                             </button>
 
+                                            <Link
+                                                to={`/admin/lessons/${lesson.id}/sections`}
+                                                className="whitespace-nowrap font-medium text-blue-600 hover:text-blue-700"
+                                            >
+                                                Gerenciar conteúdo
+                                            </Link>
+
                                             <button
                                                 type="button"
                                                 onClick={() => handleDelete(lesson)}

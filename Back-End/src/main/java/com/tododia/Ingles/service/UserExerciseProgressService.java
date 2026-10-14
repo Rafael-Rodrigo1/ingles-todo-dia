@@ -51,12 +51,35 @@ public class UserExerciseProgressService {
                                 .build()
                 );
 
-        progress.setCompleted(request.getCompleted());
-        progress.setScore(request.getScore());
+        // Verifica se o exercício já havia sido aprovado.
+        boolean alreadyCompleted =
+                Boolean.TRUE.equals(progress.getCompleted());
 
-        progress.setAttempts(
-                progress.getAttempts() + 1
-        );
+// Valida a aprovação usando a nota mínima do exercício.
+        boolean passed =
+                request.getScore() != null
+                        && request.getScore() >= exercise.getPassingScore();
+
+// Uma aprovação anterior não pode ser perdida.
+        progress.setCompleted(alreadyCompleted || passed);
+
+// Mantém a melhor pontuação obtida.
+        int previousScore = progress.getScore() != null
+                ? progress.getScore()
+                : 0;
+
+        int newScore = request.getScore() != null
+                ? request.getScore()
+                : 0;
+
+        progress.setScore(Math.max(previousScore, newScore));
+
+// Registra uma Nova Tentativa.
+        int previousAttempts = progress.getAttempts() != null
+                ? progress.getAttempts()
+                : 0;
+
+        progress.setAttempts(previousAttempts + 1);
 
         progress.setLastAttempt(LocalDateTime.now());
 

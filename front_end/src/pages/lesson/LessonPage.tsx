@@ -220,12 +220,14 @@ export function LessonPage() {
             return;
         }
 
-        const updatedExercises = {
-            ...completedExercises,
-            [exerciseId]: score,
-        };
+        const updatedExercises = { ...completedExercises };
 
-        setCompletedExercises(updatedExercises);
+        if (passed) {
+            updatedExercises[exerciseId] = Math.max(updatedExercises[exerciseId] ?? 0, score);
+        }
+
+        // Keep a previously approved exercise even if a later attempt fails.
+        // Update the UI only after the backend confirms persistence.
 
         const updatedScores = Object.values(updatedExercises);
 
@@ -290,16 +292,32 @@ export function LessonPage() {
                 updatedTotalStudyTime,
             });
 
-            await saveExerciseProgress({
+            const exerciseProgress = await saveExerciseProgress({
                 exerciseId,
-                completed: true,
+                completed: passed,
                 score,
             });
 
-            const updatedProgress = await saveProgress(data);
+            if (exerciseProgress.completed) {
+                updatedExercises[exerciseId] = exerciseProgress.score;
+            }
+            setCompletedExercises(updatedExercises);
+
+            const persistedScores = Object.values(updatedExercises);
+            const persistedCount = persistedScores.length;
+            const updatedProgress = await saveProgress({
+                ...data,
+                completed: exercises.length > 0 && persistedCount === exercises.length,
+                score: persistedCount > 0
+                    ? Math.round(persistedScores.reduce((sum, value) => sum + value, 0) / persistedCount)
+                    : 0,
+                percentage: exercises.length > 0
+                    ? Math.round((persistedCount / exercises.length) * 100)
+                    : 0,
+                exercisesCompleted: persistedCount,
+            });
 
             accountedSessionTime.current = currentSessionTime;
-
             setSavedProgress(updatedProgress);
 
             console.log(
@@ -430,6 +448,7 @@ export function LessonPage() {
                         section={section}
                         index={index}
                         exercises={exercises}
+                        completedExercises={completedExercises}
                         onExerciseComplete={handleExerciseComplete}
                     />
                 ))}

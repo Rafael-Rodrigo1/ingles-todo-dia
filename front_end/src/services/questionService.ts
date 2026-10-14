@@ -1,5 +1,5 @@
 import api from "./api";
-import type { Question } from "../types/question";
+import type { Question, QuestionRequest } from "../types/question";
 
 export const getQuestionsByExercise = async (
     exerciseId: number
@@ -9,4 +9,33 @@ export const getQuestionsByExercise = async (
     );
 
     return response.data;
+};
+
+export const createQuestion = async (
+    data: QuestionRequest
+): Promise<Question> => {
+    const response = await api.post<Question>(
+        "/questions",
+        data
+    );
+
+    return response.data;
+};
+
+export const updateQuestion = async (
+    id: number,
+    data: QuestionRequest
+): Promise<Question> => {
+    const response = await api.put<Question>(
+        `/questions/${id}`,
+        data
+    );
+
+    return response.data;
+};
+
+export const deleteQuestion = async (
+    id: number
+): Promise<void> => {
+    await api.delete(`/questions/${id}`);
 };

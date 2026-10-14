@@ -100,6 +100,7 @@ interface LessonSectionCardProps {
     section: LessonSection;
     index: number;
     exercises: Exercise[];
+    completedExercises: Record<number, number>;
     onExerciseComplete?: (
         exerciseId: number,
         score: number,
@@ -111,6 +112,7 @@ export function LessonSectionCard({
                                       section,
                                       index,
                                       exercises,
+                                      completedExercises,
                                       onExerciseComplete,
                                   }: LessonSectionCardProps) {
     const config = sectionTypeConfig[section.type];
@@ -141,6 +143,7 @@ export function LessonSectionCard({
                         <LessonSectionContent
                             section={section}
                             exercises={exercises}
+                            completedExercises={completedExercises}
                             onExerciseComplete={onExerciseComplete}
                         />
                     </div>
