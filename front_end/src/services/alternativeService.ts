@@ -2,6 +2,7 @@
 import api from "./api";
 import type {
     Alternative,
+    AlternativeAdmin,
     AlternativeRequest,
 } from "../types/alternative";
 
@@ -43,3 +44,14 @@ export const deleteAlternative = async (
 ): Promise<void> => {
     await api.delete(`/alternatives/${id}`);
 };
+
+export const getAlternativesByQuestionForAdmin = async (
+    questionId: number
+): Promise<AlternativeAdmin[]> => {
+    const response = await api.get<AlternativeAdmin[]>(
+        `/alternatives/admin/question/${questionId}`
+    );
+
+    return response.data;
+};
+

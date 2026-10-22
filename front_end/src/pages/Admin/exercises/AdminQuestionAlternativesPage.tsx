@@ -1,20 +1,14 @@
-
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
-import {
-    createAlternative,
-    deleteAlternative,
-    getAlternativesByQuestion,
-    updateAlternative,
-} from "../../../services/alternativeService";
-import type { Alternative } from "../../../types/alternative";
+import {createAlternative, deleteAlternative, getAlternativesByQuestionForAdmin, updateAlternative,} from "../../../services/alternativeService";
+import type { AlternativeAdmin } from "../../../types/alternative";
 
 export function AdminQuestionAlternativesPage() {
     const { questionId } = useParams();
     const id = Number(questionId);
     const validId = Number.isSafeInteger(id) && id > 0;
 
-    const [alternatives, setAlternatives] = useState<Alternative[]>([]);
+    const [alternatives, setAlternatives] = useState<AlternativeAdmin[]>([]);
     const [text, setText] = useState("");
     const [correct, setCorrect] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
@@ -35,7 +29,7 @@ export function AdminQuestionAlternativesPage() {
             setError("");
 
             try {
-                const data = await getAlternativesByQuestion(id);
+                const data = await getAlternativesByQuestionForAdmin(id);
                 setAlternatives(data);
             } catch (err) {
                 console.error(err);
@@ -54,7 +48,7 @@ export function AdminQuestionAlternativesPage() {
         setEditingId(null);
     }
 
-    function handleEdit(alternative: Alternative) {
+    function handleEdit(alternative: AlternativeAdmin)  {
         setEditingId(alternative.id);
         setText(alternative.text);
         setCorrect(alternative.correct);
@@ -90,18 +84,18 @@ export function AdminQuestionAlternativesPage() {
                 questionId: id,
             };
 
-            if (editingId !== null) {
-                const updated = await updateAlternative(editingId, payload);
 
-                setAlternatives((current) =>
-                    current.map((item) =>
-                        item.id === editingId ? updated : item
-                    )
-                );
+            if (editingId !== null) {
+                await updateAlternative(editingId, payload);
             } else {
-                const created = await createAlternative(payload);
-                setAlternatives((current) => [...current, created]);
+                await createAlternative(payload);
             }
+
+            const updatedAlternatives =
+                await getAlternativesByQuestionForAdmin(id);
+
+            setAlternatives(updatedAlternatives);
+
 
             resetForm();
             setMessage("Alternativa salva com sucesso.");
@@ -113,7 +107,7 @@ export function AdminQuestionAlternativesPage() {
         }
     }
 
-    async function handleDelete(alternative: Alternative) {
+    async function handleDelete(alternative: AlternativeAdmin) {
         if (!window.confirm(`Excluir "${alternative.text}"?`)) return;
 
         setError("");

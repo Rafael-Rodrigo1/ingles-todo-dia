@@ -6,7 +6,7 @@ import type { Question } from "../../types/question.ts";
 interface QuestionCardProps {
     question: Question;
     index: number;
-    onAnswer: (questionId: number, correct: boolean) => void;
+    onAnswer: (questionId: number, alternativeId: number) => void;
 }
 
 export function QuestionCard({question, index, onAnswer,} : QuestionCardProps) {
@@ -18,9 +18,6 @@ export function QuestionCard({question, index, onAnswer,} : QuestionCardProps) {
     const selectedAlternative = alternatives.find(
         (alternative) => alternative.id === selectedAlternativeId
     );
-
-    const isCorrect =
-        answered && selectedAlternative?.correct === true;
 
     useEffect(() => {
         async function loadAlternatives() {
@@ -52,20 +49,16 @@ export function QuestionCard({question, index, onAnswer,} : QuestionCardProps) {
             return;
         }
 
-        const selectedAlternative = alternatives.find(
-            (alternative) =>
-                alternative.id === selectedAlternativeId
-        );
+
 
         if (!selectedAlternative) {
             return;
         }
 
         setAnswered(true);
-
         onAnswer(
             question.id,
-            selectedAlternative.correct
+            selectedAlternative.id
         );
     }
 
@@ -132,14 +125,6 @@ export function QuestionCard({question, index, onAnswer,} : QuestionCardProps) {
                                 const isSelected =
                                     selectedAlternativeId === alternative.id;
 
-                                const showAsCorrect =
-                                    answered && alternative.correct;
-
-                                const showAsIncorrect =
-                                    answered &&
-                                    isSelected &&
-                                    !alternative.correct;
-
                                 return (
                                     <button
                                         key={alternative.id}
@@ -151,34 +136,26 @@ export function QuestionCard({question, index, onAnswer,} : QuestionCardProps) {
                                             }
                                         }}
                                         className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition ${
-                                            showAsCorrect
-                                                ? "border-emerald-500 bg-emerald-50"
-                                                : showAsIncorrect
-                                                    ? "border-red-500 bg-red-50"
-                                                    : isSelected
-                                                        ? "border-blue-500 bg-blue-50"
-                                                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                                            isSelected
+                                                ? "border-blue-500 bg-blue-50"
+                                                : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                                         }`}
                                     >
                                     <span
                                         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                                            showAsCorrect
-                                                ? "bg-emerald-600 text-white"
-                                                : showAsIncorrect
-                                                    ? "bg-red-600 text-white"
-                                                    : isSelected
-                                                        ? "bg-blue-600 text-white"
-                                                        : "bg-slate-100 text-slate-600"
+                                            isSelected
+                                                ? "bg-blue-600 text-white"
+                                                : "bg-slate-100 text-slate-600"
                                         }`}
                                     >
                                             {String.fromCharCode(65 + alternativeIndex)}
                                     </span>
                                        <span
                                            className={`text-sm ${
-                                               showAsCorrect ? "font-medium text-emerald-900" 
-                                                   : showAsIncorrect ? "font-medium text-red-900" 
-                                                   : isSelected ? "font-medium text-blue-900" : "text-slate-700"
-                                             }`}
+                                               isSelected
+                                                   ? "font-medium text-blue-900"
+                                                   : "text-slate-700"
+                                           }`}
                                        >
                                               {alternative.text}
                                       </span>
@@ -199,38 +176,18 @@ export function QuestionCard({question, index, onAnswer,} : QuestionCardProps) {
                         {answered ? "Resposta confirmada" : "Confirmar resposta"}
                     </button>
                 )}
+
                 {answered && (
-                    <div
-                        className={`mt-4 rounded-lg border p-4 ${
-                            isCorrect
-                                ? "border-emerald-200 bg-emerald-50"
-                                : "border-red-200 bg-red-50"
-                        }`}
-                    >
-                        <p
-                            className={`font-medium ${
-                                isCorrect
-                                    ? "text-emerald-700"
-                                    : "text-red-700"
-                            }`}
-                        >
-                            {isCorrect
-                                ? "Resposta correta!"
-                                : "Resposta incorreta."}
-                        </p>
+                        <div className="mt-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <p className="font-medium text-blue-700">
+                                Resposta confirmada!
+                            </p>
 
-                        {question.explanation && (
-                            <div className="mt-3 border-t border-black/10 pt-3">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                                    Explicação
-                                </p>
-
-                                <p className="mt-1 text-sm leading-6 text-slate-700">
-                                    {question.explanation}
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                            <p className="mt-1 text-sm text-slate-600">
+                                Sua alternativa foi registrada.
+                                O resultado será apresentado após a correção do exercício.
+                            </p>
+                        </div>
                 )}
             </div>
         </div>

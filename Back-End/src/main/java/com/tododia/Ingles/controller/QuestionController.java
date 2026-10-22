@@ -8,7 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.tododia.Ingles.dto.response.QuestionAdminResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
 import java.util.List;
 
 @RestController
@@ -45,6 +46,16 @@ public class QuestionController {
 
         return ResponseEntity.ok(
                 questionService.findByExercise(exerciseId)
+        );
+    }
+
+    @GetMapping("/admin/exercise/{exerciseId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<QuestionAdminResponse>> findByExerciseForAdmin(
+            @PathVariable Long exerciseId) {
+
+        return ResponseEntity.ok(
+                questionService.findByExerciseForAdmin(exerciseId)
         );
     }
 

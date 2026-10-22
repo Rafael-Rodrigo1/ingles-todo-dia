@@ -1,5 +1,9 @@
 import api from "./api";
-import type { Question, QuestionRequest } from "../types/question";
+import type {
+    Question,
+    QuestionAdmin,
+    QuestionRequest,
+} from "../types/question";
 
 export const getQuestionsByExercise = async (
     exerciseId: number
@@ -38,4 +42,14 @@ export const deleteQuestion = async (
     id: number
 ): Promise<void> => {
     await api.delete(`/questions/${id}`);
+};
+
+export const getQuestionsByExerciseForAdmin = async (
+    exerciseId: number
+): Promise<QuestionAdmin[]> => {
+    const response = await api.get<QuestionAdmin[]>(
+        `/questions/admin/exercise/${exerciseId}`
+    );
+
+    return response.data;
 };

@@ -1,10 +1,12 @@
 package com.tododia.Ingles.dto.request;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,11 +15,18 @@ public class UserExerciseProgressRequest {
     @NotNull
     private Long exerciseId;
 
-    @NotNull
-    private Boolean completed;
+    @Valid
+    @NotEmpty
+    private List<Answer> answers;
 
-    @NotNull
-    @Min(0)
-    @Max(100)
-    private Integer score;
+    @Getter
+    @Setter
+    public static class Answer {
+
+        @NotNull
+        private Long questionId;
+
+        @NotNull
+        private Long alternativeId;
+    }
 }

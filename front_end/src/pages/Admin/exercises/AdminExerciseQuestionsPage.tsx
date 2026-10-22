@@ -4,10 +4,13 @@ import { Link, useParams } from "react-router-dom";
 import {
     createQuestion,
     deleteQuestion,
-    getQuestionsByExercise,
+    getQuestionsByExerciseForAdmin,
     updateQuestion,
 } from "../../../services/questionService";
-import type { Question, QuestionRequest } from "../../../types/question";
+import type {
+    QuestionAdmin,
+    QuestionRequest,
+} from "../../../types/question";
 
 const initialForm = {
     statement: "",
@@ -22,7 +25,7 @@ export function AdminExerciseQuestionsPage() {
     const { exerciseId } = useParams();
     const id = Number(exerciseId);
 
-    const [questions, setQuestions] = useState<Question[]>([]);
+    const [questions, setQuestions] = useState<QuestionAdmin[]>([]);
     const [form, setForm] = useState(initialForm);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
@@ -38,7 +41,7 @@ export function AdminExerciseQuestionsPage() {
 
         async function loadQuestions() {
             try {
-                const data = await getQuestionsByExercise(id);
+                const data = await getQuestionsByExerciseForAdmin(id);
                 setQuestions(
                     [...data].sort((a, b) => a.orderIndex - b.orderIndex)
                 );
@@ -58,7 +61,7 @@ export function AdminExerciseQuestionsPage() {
         setEditingId(null);
     }
 
-    function handleEdit(question: Question) {
+    function handleEdit(question: QuestionAdmin) {
         setEditingId(question.id);
         setForm({
             statement: question.statement,
@@ -88,21 +91,21 @@ export function AdminExerciseQuestionsPage() {
         };
 
         try {
+
             if (editingId !== null) {
-                const updated = await updateQuestion(editingId, payload);
-                setQuestions((current) =>
-                    current.map((item) =>
-                        item.id === editingId ? updated : item
-                    ).sort((a, b) => a.orderIndex - b.orderIndex)
-                );
+                await updateQuestion(editingId, payload);
             } else {
-                const created = await createQuestion(payload);
-                setQuestions((current) =>
-                    [...current, created].sort(
-                        (a, b) => a.orderIndex - b.orderIndex
-                    )
-                );
+                await createQuestion(payload);
             }
+
+            const updatedQuestions =
+                await getQuestionsByExerciseForAdmin(id);
+
+            setQuestions(
+                [...updatedQuestions].sort(
+                    (a, b) => a.orderIndex - b.orderIndex
+                )
+            );
 
             resetForm();
         } catch (err) {
@@ -113,7 +116,7 @@ export function AdminExerciseQuestionsPage() {
         }
     }
 
-    async function handleDelete(question: Question) {
+    async function handleDelete(question: QuestionAdmin) {
         if (!window.confirm(`Excluir a pergunta "${question.statement}"?`)) {
             return;
         }

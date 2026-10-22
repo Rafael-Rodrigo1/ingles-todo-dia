@@ -13,11 +13,13 @@ public class UserExerciseProgressResponse {
 
     private Long exerciseId;
 
+    // Histórico do aluno
     private Boolean completed;
-
     private Integer score;
-
     private Integer attempts;
-
     private LocalDateTime lastAttempt;
+
+    // Resultado da tentativa atual
+    private Integer attemptScore;
+    private Boolean attemptPassed;
 }

@@ -11,7 +11,7 @@ import com.tododia.Ingles.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.tododia.Ingles.dto.response.AlternativeAdminResponse;
 import java.util.List;
 
 @Service
@@ -81,6 +81,35 @@ public class AlternativeService {
                 alternativeRepository.findByQuestionId(questionId)
         );
     }
+
+
+    @Transactional(readOnly = true)
+    public List<AlternativeAdminResponse> findByQuestionForAdmin(
+            Long questionId) {
+
+        if (!questionRepository.existsById(questionId)) {
+            throw new ResourceNotFoundException(
+                    "Questão não encontrada."
+            );
+        }
+
+        return alternativeRepository
+                .findByQuestionId(questionId)
+                .stream()
+                .map(alternative ->
+                        AlternativeAdminResponse.builder()
+                                .id(alternative.getId())
+                                .text(alternative.getText())
+                                .correct(alternative.getCorrect())
+                                .questionId(alternative.getQuestion().getId())
+                                .questionStatement(
+                                        alternative.getQuestion().getStatement()
+                                )
+                                .build()
+                )
+                .toList();
+    }
+
 
     public AlternativeResponse update(
             Long id,

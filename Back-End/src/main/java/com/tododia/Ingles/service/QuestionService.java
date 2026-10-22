@@ -11,6 +11,7 @@ import com.tododia.Ingles.repository.QuestionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.tododia.Ingles.dto.response.QuestionAdminResponse;
 
 import java.util.List;
 
@@ -73,6 +74,36 @@ public class QuestionService {
                 questionRepository
                         .findByExerciseIdOrderByOrderIndexAsc(exerciseId)
         );
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<QuestionAdminResponse> findByExerciseForAdmin(
+            Long exerciseId) {
+
+        if (!exerciseRepository.existsById(exerciseId)) {
+            throw new ResourceNotFoundException(
+                    "Exercício não encontrado."
+            );
+        }
+
+        return questionRepository
+                .findByExerciseIdOrderByOrderIndexAsc(exerciseId)
+                .stream()
+                .map(question ->
+                        QuestionAdminResponse.builder()
+                                .id(question.getId())
+                                .statement(question.getStatement())
+                                .explanation(question.getExplanation())
+                                .orderIndex(question.getOrderIndex())
+                                .imageUrl(question.getImageUrl())
+                                .audioUrl(question.getAudioUrl())
+                                .points(question.getPoints())
+                                .exerciseId(question.getExercise().getId())
+                                .exerciseTitle(question.getExercise().getTitle())
+                                .build()
+                )
+                .toList();
     }
 
     public QuestionResponse update(

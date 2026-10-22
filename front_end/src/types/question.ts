@@ -1,7 +1,7 @@
+
 export interface Question {
     id: number;
     statement: string;
-    explanation: string | null;
     orderIndex: number;
     imageUrl: string | null;
     audioUrl: string | null;
@@ -18,4 +18,8 @@ export interface QuestionRequest {
     audioUrl: string | null;
     points: number;
     exerciseId: number;
+}
+
+export interface QuestionAdmin extends Question {
+    explanation: string | null;
 }

@@ -111,6 +111,11 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         // QUESTIONS
+
+                        // QUESTIONS
+                        .requestMatchers(HttpMethod.GET, "/api/questions/admin/**")
+                        .hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.GET, "/api/questions/**")
                         .permitAll()
 
@@ -123,7 +128,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/questions/**")
                         .hasRole("ADMIN")
 
+
                         // ALTERNATIVES
+                        .requestMatchers(HttpMethod.GET, "/api/alternatives/admin/**")
+                        .hasRole("ADMIN")
+
                         .requestMatchers(HttpMethod.GET, "/api/alternatives/**")
                         .permitAll()
 
@@ -163,7 +172,11 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
 
                         // USER PROGRESS
-                        .requestMatchers("/api/progress/**")
+                        .requestMatchers(
+                                "/api/progress/**",
+                                "/api/exercise-progress",
+                                "/api/exercise-progress/**"
+                        )
                         .authenticated()
 
                         // STUDY SESSIONS

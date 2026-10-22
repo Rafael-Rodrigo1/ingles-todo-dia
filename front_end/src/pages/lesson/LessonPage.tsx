@@ -10,6 +10,7 @@ import type { Exercise } from "../../types/exercise";
 import {getMyProgressByLesson, saveProgress,} from "../../services/progressService";
 import type { UserProgress } from "../../types/userProgress";
 import { getExerciseProgressByLesson, saveExerciseProgress,} from "../../services/exerciseProgressService";
+import type {UserExerciseProgress} from "../../types/userExerciseProgress.ts";
 
 export function LessonPage() {
     const { id } = useParams<{ id: string }>();
@@ -205,132 +206,117 @@ export function LessonPage() {
         );
     }
 
+
     async function handleExerciseComplete(
         exerciseId: number,
-        score: number,
-        passed: boolean
-    ) {
-        console.log("Exercício concluído:", {
-            exerciseId,
-            score,
-            passed,
-        });
-
+        answers: { questionId: number; alternativeId: number }[]
+    ): Promise<UserExerciseProgress> {
         if (!lesson) {
-            return;
+            throw new Error("Aula não encontrada.");
         }
-
-        const updatedExercises = { ...completedExercises };
-
-        if (passed) {
-            updatedExercises[exerciseId] = Math.max(updatedExercises[exerciseId] ?? 0, score);
-        }
-
-        // Keep a previously approved exercise even if a later attempt fails.
-        // Update the UI only after the backend confirms persistence.
-
-        const updatedScores = Object.values(updatedExercises);
-
-        const updatedExercisesCompleted =
-            Object.keys(updatedExercises).length;
-
-        const updatedAverageScore =
-            updatedScores.length > 0
-                ? Math.round(
-                    updatedScores.reduce(
-                        (total, currentScore) =>
-                            total + currentScore,
-                        0
-                    ) / updatedScores.length
-                )
-                : 0;
-
-        const updatedPercentage =
-            exercises.length > 0
-                ? Math.round(
-                    (updatedExercisesCompleted /
-                        exercises.length) *
-                    100
-                )
-                : 0;
-
-        const updatedCompleted =
-            exercises.length > 0 &&
-            updatedExercisesCompleted === exercises.length;
-        const currentSessionTime = Math.floor(
-            (Date.now() - lessonStartTime.current) / 1000
-        );
-
-        const newStudyTime =
-            currentSessionTime - accountedSessionTime.current;
-
-        const previousStudyTime =
-            savedProgress?.totalStudyTime ?? 0;
-
-        const updatedTotalStudyTime =
-            previousStudyTime + newStudyTime;
-
-
-        const data = {
-            lessonId: lesson.id,
-            completed: updatedCompleted,
-            score: updatedAverageScore,
-            percentage: updatedPercentage,
-            currentSection: sections.length,
-            exercisesCompleted: updatedExercisesCompleted,
-            totalStudyTime: updatedTotalStudyTime,
-        };
-
-        console.log("Enviando progresso:", data);
-
 
         try {
-            console.log("Tempo de estudo:", {
-                currentSessionTime,
-                newStudyTime,
-                previousStudyTime,
-                updatedTotalStudyTime,
-            });
-
+            // O backend valida as respostas e calcula a nota.
             const exerciseProgress = await saveExerciseProgress({
                 exerciseId,
-                completed: passed,
-                score,
+                answers,
             });
+
+            console.log("Resultado calculado pelo servidor:", {
+                attemptScore: exerciseProgress.attemptScore,
+                attemptPassed: exerciseProgress.attemptPassed,
+                bestScore: exerciseProgress.score,
+                completed: exerciseProgress.completed,
+            });
+
+            // Preserva os exercícios aprovados anteriormente.
+            const updatedExercises = { ...completedExercises };
 
             if (exerciseProgress.completed) {
                 updatedExercises[exerciseId] = exerciseProgress.score;
             }
+
             setCompletedExercises(updatedExercises);
 
+            // Recalcula o progresso da aula com os resultados
+            // confirmados pelo servidor.
             const persistedScores = Object.values(updatedExercises);
             const persistedCount = persistedScores.length;
-            const updatedProgress = await saveProgress({
-                ...data,
-                completed: exercises.length > 0 && persistedCount === exercises.length,
-                score: persistedCount > 0
-                    ? Math.round(persistedScores.reduce((sum, value) => sum + value, 0) / persistedCount)
-                    : 0,
-                percentage: exercises.length > 0
-                    ? Math.round((persistedCount / exercises.length) * 100)
-                    : 0,
-                exercisesCompleted: persistedCount,
-            });
 
-            accountedSessionTime.current = currentSessionTime;
-            setSavedProgress(updatedProgress);
+            const updatedAverageScore =
+                persistedCount > 0
+                    ? Math.round(
+                        persistedScores.reduce(
+                            (total, currentScore) =>
+                                total + currentScore,
+                            0
+                        ) / persistedCount
+                    )
+                    : 0;
 
-            console.log(
-                "Progresso salvo:",
-                updatedProgress
+            const updatedPercentage =
+                exercises.length > 0
+                    ? Math.round(
+                        (persistedCount / exercises.length) * 100
+                    )
+                    : 0;
+
+            const updatedCompleted =
+                exercises.length > 0 &&
+                persistedCount === exercises.length;
+
+            // Calcula o tempo de estudo ainda não registrado.
+            const currentSessionTime = Math.floor(
+                (Date.now() - lessonStartTime.current) / 1000
             );
+
+            const newStudyTime = Math.max(
+                0,
+                currentSessionTime - accountedSessionTime.current
+            );
+
+            const previousStudyTime =
+                savedProgress?.totalStudyTime ?? 0;
+
+            const updatedTotalStudyTime =
+                previousStudyTime + newStudyTime;
+
+
+            try {
+                const updatedProgress = await saveProgress({
+                    lessonId: lesson.id,
+                    completed: updatedCompleted,
+                    score: updatedAverageScore,
+                    percentage: updatedPercentage,
+                    currentSection: sections.length,
+                    exercisesCompleted: persistedCount,
+                    totalStudyTime: updatedTotalStudyTime,
+                });
+
+                accountedSessionTime.current = currentSessionTime;
+                setSavedProgress(updatedProgress);
+
+                console.log("Progresso da aula salvo:", updatedProgress);
+
+            } catch (progressError) {
+                console.error(
+                    "O exercício foi corrigido, mas não foi possível atualizar o progresso da aula:",
+                    progressError
+                );
+            }
+
+            return exerciseProgress;
+
         } catch (error) {
             console.error(
-                "Erro ao salvar progresso:",
+                "Erro ao salvar o resultado do exercício:",
                 error
             );
+
+            throw error;
         }
     }
+
 
     return (
         <section className="space-y-8">

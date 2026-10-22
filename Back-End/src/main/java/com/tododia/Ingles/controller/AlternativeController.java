@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.tododia.Ingles.dto.response.AlternativeAdminResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -49,6 +51,17 @@ public class AlternativeController {
                 alternativeService.findByQuestion(questionId)
         );
     }
+
+    @GetMapping("/admin/question/{questionId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AlternativeAdminResponse>> findByQuestionForAdmin(
+            @PathVariable Long questionId) {
+
+        return ResponseEntity.ok(
+                alternativeService.findByQuestionForAdmin(questionId)
+        );
+    }
+
 
     @PutMapping("/{id}")
     public ResponseEntity<AlternativeResponse> update(

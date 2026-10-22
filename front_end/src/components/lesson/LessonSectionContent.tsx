@@ -1,6 +1,7 @@
 import type { LessonSection } from "../../types/lessonSection";
 import type { Exercise } from "../../types/exercise";
 import { ExerciseSection } from "../exercise/ExerciseSection";
+import type { UserExerciseProgress } from "../../types/userExerciseProgress";
 
 interface LessonSectionContentProps {
     section: LessonSection;
@@ -8,9 +9,8 @@ interface LessonSectionContentProps {
     completedExercises: Record<number, number>;
     onExerciseComplete?: (
         exerciseId: number,
-        score: number,
-        passed: boolean
-    ) => void;
+        answers: { questionId: number; alternativeId: number }[]
+    ) => Promise<UserExerciseProgress>;
 }
 
 export function LessonSectionContent({

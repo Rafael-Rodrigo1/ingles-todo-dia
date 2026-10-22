@@ -17,8 +17,6 @@ public class AlternativeResponse {
 
     private String text;
 
-    private Boolean correct;
-
     private Long questionId;
 
     private String questionStatement;

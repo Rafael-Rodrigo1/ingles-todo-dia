@@ -1,6 +1,7 @@
 import type { Exercise } from "../../types/exercise";
 import { useEffect, useRef, useState } from "react";
 import { getQuestionsByExercise } from "../../services/questionService";
+import type { UserExerciseProgress } from "../../types/userExerciseProgress";
 import type { Question } from "../../types/question";
 import { QuestionCard } from "./QuestionCard";
 
@@ -9,9 +10,8 @@ interface ExerciseSectionProps {
     completedExercises: Record<number, number>;
     onExerciseComplete?: (
         exerciseId: number,
-        score: number,
-        passed: boolean
-    ) => void;
+        answers: { questionId: number; alternativeId: number }[]
+    ) => Promise<UserExerciseProgress>;
 }
 
 interface ExerciseCardProps {
@@ -20,21 +20,26 @@ interface ExerciseCardProps {
     savedScore?: number;
     onExerciseComplete?: (
         exerciseId: number,
-        score: number,
-        passed: boolean
-    ) => void;
+        answers: { questionId: number; alternativeId: number }[]
+    ) => Promise<UserExerciseProgress>;
 }
 
 function ExerciseCard({exercise, index, savedScore, onExerciseComplete, } : ExerciseCardProps) {
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [answers, setAnswers] = useState<Record<number, boolean>>({});
+    const [answers, setAnswers] = useState<Record<number, number>>({});
 
     const completionSent = useRef(false);
     const [attempt, setAttempt] = useState(0);
     const [retrying, setRetrying] = useState(false);
-    const showSavedResult = savedScore !== undefined && !retrying;
+    const [attemptResult, setAttemptResult] =
+        useState<UserExerciseProgress | null>(null);
+
+    const [submitting, setSubmitting] = useState(false);
+
+    const [submitError, setSubmitError] = useState("");
+    const showSavedResult = savedScore !== undefined && !retrying && attemptResult === null;
 
     useEffect(() => {
         async function loadQuestions() {
@@ -63,70 +68,81 @@ function ExerciseCard({exercise, index, savedScore, onExerciseComplete, } : Exer
 
     function handleAnswer(
         questionId: number,
-        correct: boolean
+        alternativeId: number
     ) {
-        console.log(
-            "Resultado recebido:",
-            questionId,
-            correct
-        );
-
         setAnswers((currentAnswers) => ({
             ...currentAnswers,
-            [questionId]: correct,
+            [questionId]: alternativeId,
         }));
     }
 
     const answeredQuestions = Object.keys(answers).length;
 
-    const correctAnswers = Object.values(answers).filter(
-        (correct) => correct
-    ).length;
-
     const totalQuestions = questions.length;
-
-    const score =
-        totalQuestions > 0
-            ? Math.round(
-                (correctAnswers / totalQuestions) * 100
-            )
-            : 0;
 
     const exerciseCompleted =
         totalQuestions > 0 &&
         answeredQuestions === totalQuestions;
 
-    const passed =
-        exerciseCompleted &&
-        score >= exercise.passingScore;
 
     useEffect(() => {
         if (
             !exerciseCompleted ||
-            completionSent.current
+            completionSent.current ||
+            !onExerciseComplete
         ) {
             return;
         }
 
         completionSent.current = true;
 
-        onExerciseComplete?.(
-            exercise.id,
-            score,
-            passed
+        const selectedAnswers = Object.entries(answers).map(
+            ([questionId, alternativeId]) => ({
+                questionId: Number(questionId),
+                alternativeId,
+            })
         );
-    }, [
-        exerciseCompleted,
-        exercise.id,
-        score,
-        passed,
-        onExerciseComplete,
-    ]);
+
+        async function submitAnswers() {
+            setSubmitting(true);
+            setSubmitError("");
+            setAttemptResult(null);
+
+            try {
+                const result = await onExerciseComplete!(
+                    exercise.id,
+                    selectedAnswers
+                );
+
+                setAttemptResult(result);
+            } catch (error) {
+                console.error("Erro ao enviar respostas:", error);
+
+                setSubmitError(
+                    "Não foi possível corrigir o exercício. Tente novamente."
+                );
+            } finally {
+                setSubmitting(false);
+            }
+        }
+
+        void submitAnswers();
+    }, [exerciseCompleted, exercise.id, answers, onExerciseComplete]);
+
 
     function handleRetry() {
+        if (submitting) {
+            return;
+        }
+
         setRetrying(true);
         setAnswers({});
+        setAttemptResult(null);
+        setSubmitError("");
+        setSubmitting(false);
+
         completionSent.current = false;
+
         setAttempt((current) => current + 1);
     }
 
@@ -188,48 +204,97 @@ function ExerciseCard({exercise, index, savedScore, onExerciseComplete, } : Exer
                 {answeredQuestions}/{totalQuestions} respondidas
             </span>
                     </div>
+
                     {exerciseCompleted && (
-                        <div
-                            className={`mt-4 rounded-lg border p-4 ${
-                                passed
-                                    ? "border-emerald-200 bg-emerald-50"
-                                    : "border-red-200 bg-red-50"
-                            }`}
-                        >
-                            <p
-                                className={`font-semibold ${
-                                    passed
-                                        ? "text-emerald-700"
-                                        : "text-red-700"
-                                }`}
-                            >
-                                {passed
-                                    ? "Exercício concluído!"
-                                    : "Pontuação insuficiente"}
-                            </p>
+                        <div className="mt-4 space-y-3">
 
-                            <p className="mt-1 text-sm text-slate-600">
-                                Você acertou {correctAnswers} de{" "}
-                                {totalQuestions} questões e obteve{" "}
-                                <strong>{score}%</strong>.
-                            </p>
+                            {submitting && (
+                                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                    <p className="font-semibold text-blue-700">
+                                        Corrigindo exercício...
+                                    </p>
+                                    <p className="mt-1 text-sm text-slate-600">
+                                        Aguarde enquanto o servidor verifica suas respostas.
+                                    </p>
+                                </div>
+                            )}
 
-                            <p className="mt-1 text-sm text-slate-600">
-                                Pontuação mínima para aprovação:{" "}
-                                <strong>{exercise.passingScore}%</strong>.
-                            </p>
+                            {submitError && (
+                                <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                                    <p className="font-semibold text-red-700">
+                                        Erro ao corrigir exercício
+                                    </p>
 
-                            {!passed && (
-                                <button
-                                    type="button"
-                                    onClick={handleRetry}
-                                    className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+                                    <p className="mt-1 text-sm text-red-600">
+                                        {submitError}
+                                    </p>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleRetry}
+                                        disabled={submitting}
+                                        className="mt-3 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                                    >
+                                        Tentar novamente
+                                    </button>
+                                </div>
+                            )}
+
+                            {attemptResult && (
+                                <div
+                                    className={`rounded-lg border p-4 ${
+                                        attemptResult.attemptPassed
+                                            ? "border-emerald-200 bg-emerald-50"
+                                            : "border-amber-200 bg-amber-50"
+                                    }`}
+
                                 >
-                                    Tentar novamente
-                                </button>
+                                    <p className="text-lg font-semibold">
+                                        {attemptResult.attemptPassed
+                                            ? "Exercício aprovado!"
+                                            : "Exercício não aprovado"}
+                                    </p>
+
+                                    <p className="mt-2 text-sm">
+                                        Nota desta tentativa:{" "}
+                                        <strong>{attemptResult.attemptScore}%</strong>
+                                    </p>
+
+                                    <p className="mt-1 text-sm">
+                                        Nota mínima:{" "}
+                                        <strong>{exercise.passingScore}%</strong>
+                                    </p>
+
+                                    <p className="mt-1 text-sm">
+                                        Melhor nota registrada:{" "}
+                                        <strong>{attemptResult.score}%</strong>
+                                    </p>
+
+                                    <p className="mt-1 text-sm">
+                                        Tentativas realizadas:{" "}
+                                        <strong>{attemptResult.attempts}</strong>
+                                    </p>
+
+                                    {!attemptResult.attemptPassed &&
+                                        attemptResult.completed && (
+                                            <p className="mt-3 text-sm text-emerald-700">
+                                                Sua aprovação anterior foi preservada.
+                                            </p>
+                                        )}
+
+                                    <button
+                                        type="button"
+                                        onClick={handleRetry}
+                                        disabled={submitting}
+                                        className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                                    >
+                                        Refazer exercício
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}
+
 
                     <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
                         <div
@@ -241,13 +306,6 @@ function ExerciseCard({exercise, index, savedScore, onExerciseComplete, } : Exer
                             }}
                         />
                     </div>
-
-                    <p className="mt-2 text-sm text-slate-600">
-                        Pontuação atual:{" "}
-                        <span className="font-semibold">
-                {score}%
-            </span>
-                    </p>
                 </div>
             )}
 

@@ -1,3 +1,4 @@
+
 export interface UserExerciseProgress {
     id: number;
     exerciseId: number;
@@ -5,10 +6,16 @@ export interface UserExerciseProgress {
     score: number;
     attempts: number;
     lastAttempt: string;
+    attemptScore?: number;
+    attemptPassed?: boolean;
+}
+
+export interface ExerciseAnswer {
+    questionId: number;
+    alternativeId: number;
 }
 
 export interface SaveUserExerciseProgress {
     exerciseId: number;
-    completed: boolean;
-    score: number;
+    answers: ExerciseAnswer[];
 }

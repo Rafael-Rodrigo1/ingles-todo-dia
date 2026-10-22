@@ -17,8 +17,6 @@ public class QuestionResponse {
 
     private String statement;
 
-    private String explanation;
-
     private Integer orderIndex;
 
     private String imageUrl;
